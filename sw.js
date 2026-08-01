@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slovicka-v1';
+const CACHE_NAME = 'slovicka-v2';
 const FILES = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', (event) => {
