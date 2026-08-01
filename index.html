@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Slovíčka</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1f6f6b">
+<style>
+  :root {
+    --bg: #f1ece1;
+    --paper: #fbf8f2;
+    --ink: #2b2620;
+    --rule: #c9bfa8;
+    --accent: #1f6f6b;
+    --accent-dark: #164f4c;
+    --margin-red: #a8452f;
+    --ok: #5b7d3a;
+    --bad: #a8452f;
+    --muted: #8a8069;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    background-image:
+      linear-gradient(var(--rule) 1px, transparent 1px);
+    background-size: 100% 32px;
+    background-position: 0 96px;
+    color: var(--ink);
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+  header {
+    padding: 26px 20px 14px;
+    text-align: center;
+  }
+  header h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  header .sub {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 4px;
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 4px 16px 18px;
+  }
+  .tab-btn {
+    flex: 1;
+    max-width: 160px;
+    padding: 10px 0;
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    background: var(--paper);
+    color: var(--accent-dark);
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .tab-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  main { padding: 0 16px; max-width: 480px; margin: 0 auto; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .card {
+    background: var(--paper);
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--margin-red);
+    padding: 22px 22px 22px 26px;
+    box-shadow: 0 3px 0 rgba(43,38,32,0.05), 0 6px 16px rgba(43,38,32,0.06);
+    margin-bottom: 14px;
+  }
+  label {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 14px 0 6px;
+  }
+  input[type=text], textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--rule);
+    font-size: 17px;
+    font-family: Georgia, serif;
+    background: #fffdf9;
+    color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 50px; }
+  button { cursor: pointer; font-family: inherit; }
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    margin-top: 18px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .btn-primary:active { background: var(--accent-dark); }
+  .btn-primary:disabled { background: var(--muted); }
+  .status { text-align: center; font-size: 13px; color: var(--muted); margin-top: 10px; min-height: 18px; }
+  .flash-card {
+    background: var(--paper);
+    border-radius: 4px;
+    border: 1px solid var(--rule);
+    position: relative;
+    padding: 44px 26px 30px;
+    text-align: center;
+    box-shadow: 0 3px 0 rgba(43,38,32,0.05), 0 8px 20px rgba(43,38,32,0.08);
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
+  .flash-card::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 30px;
+    width: 1px;
+    background: var(--margin-red);
+    opacity: 0.35;
+  }
+  .box-dots {
+    position: absolute;
+    top: 14px; right: 16px;
+    display: flex;
+    gap: 4px;
+  }
+  .box-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--rule);
+  }
+  .box-dot.filled { background: var(--accent); }
+  .flash-word {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .flash-example { font-size: 14px; color: var(--muted); font-style: italic; }
+  .flash-translation {
+    font-family: Georgia, serif;
+    font-size: 22px;
+    color: var(--accent-dark);
+    font-weight: 600;
+    display: none;
+  }
+  .flash-hint { font-size: 12px; color: var(--muted); margin-top: 6px; letter-spacing: 0.3px; }
+  .review-buttons { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-know, .btn-dontknow {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: white;
+  }
+  .btn-know { background: var(--ok); }
+  .btn-dontknow { background: var(--bad); }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+  .progress {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Slovíčka</h1>
+  <div class="sub">osobní kartotéka</div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" data-view="practice">Procvičit</button>
+  <button class="tab-btn" data-view="add">Přidat</button>
+</div>
+
+<main>
+
+  <!-- PROCVIČOVÁNÍ -->
+  <div class="view active" id="view-practice">
+    <div class="progress" id="progress-text"></div>
+    <div id="practice-area"></div>
+  </div>
+
+  <!-- PŘIDÁVÁNÍ -->
+  <div class="view" id="view-add">
+    <div class="card">
+      <label>Anglické slovo nebo fráze</label>
+      <input type="text" id="input-word" placeholder="e.g. reliable" autocomplete="off" autocapitalize="off">
+
+      <button class="btn-primary" id="btn-save">Uložit (AI doplní překlad a příklad)</button>
+      <div class="status" id="add-status"></div>
+
+      <div id="generated-preview" style="display:none; margin-top:14px; padding:12px; background:#f3f2fb; border-radius:10px;">
+        <div style="font-weight:600;" id="preview-translation"></div>
+        <div style="font-size:13px; color:var(--muted); font-style:italic; margin-top:4px;" id="preview-example"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ============ KONFIGURACE ============
+// Sem vlož URL nasazené Google Apps Script webové aplikace (končí na /exec)
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyi35zs0tRP9djBo9JlqI_saY-901VOqVvn8RDs5QR5f7tEvUqqBCH0v_xodOW6N-4x/exec';
+// ======================================
+
+let dueWords = [];
+let currentIndex = 0;
+let currentAnswerShown = false;
+
+// --- Tab switching ---
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    if (btn.dataset.view === 'practice') loadDueWords();
+  });
+});
+
+// --- API helpers ---
+async function apiGet(action) {
+  const res = await fetch(`${APPS_SCRIPT_URL}?action=${action}`);
+  return res.json();
+}
+
+async function apiPost(payload) {
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // text/plain = obchází CORS preflight u Apps Script
+    body: JSON.stringify(payload)
+  });
+  return res.json();
+}
+
+// --- Přidání slovíčka (AI doplní překlad + příklad) ---
+const btnSave = document.getElementById('btn-save');
+
+btnSave.addEventListener('click', async () => {
+  const wordInput = document.getElementById('input-word');
+  const word = wordInput.value.trim();
+  const statusEl = document.getElementById('add-status');
+  const preview = document.getElementById('generated-preview');
+
+  if (!word) {
+    statusEl.textContent = 'Napiš anglické slovo nebo frázi.';
+    return;
+  }
+
+  btnSave.disabled = true;
+  statusEl.textContent = 'AI generuje překlad a příklad...';
+  preview.style.display = 'none';
+
+  try {
+    const result = await apiPost({ action: 'add', word });
+    if (result.status !== 'ok') throw new Error(result.message || 'neznámá chyba');
+
+    statusEl.textContent = 'Uloženo: ' + word;
+    document.getElementById('preview-translation').textContent = '→ ' + result.translation;
+    document.getElementById('preview-example').textContent = result.example;
+    preview.style.display = 'block';
+
+    wordInput.value = '';
+    wordInput.focus();
+  } catch (err) {
+    statusEl.textContent = 'Chyba: ' + err.message;
+  } finally {
+    btnSave.disabled = false;
+  }
+});
+
+document.getElementById('input-word').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') btnSave.click();
+});
+
+// --- Procvičování (Leitner flashcards) ---
+async function loadDueWords() {
+  const area = document.getElementById('practice-area');
+  const progressText = document.getElementById('progress-text');
+  area.innerHTML = '<div class="empty-state">Načítám...</div>';
+  progressText.textContent = '';
+
+  try {
+    dueWords = await apiGet('due');
+    currentIndex = 0;
+    renderCard();
+  } catch (err) {
+    area.innerHTML = `<div class="empty-state">Chyba při načítání: ${err.message}</div>`;
+  }
+}
+
+function renderCard() {
+  const area = document.getElementById('practice-area');
+  const progressText = document.getElementById('progress-text');
+
+  if (!dueWords.length || currentIndex >= dueWords.length) {
+    area.innerHTML = '<div class="empty-state">Na dnešek nic k opakování.<br>Tak co, přidáš nové slovíčko?</div>';
+    progressText.textContent = '';
+    return;
+  }
+
+  progressText.textContent = `${currentIndex + 1} / ${dueWords.length}`;
+  const w = dueWords[currentIndex];
+  currentAnswerShown = false;
+
+  area.innerHTML = `
+    <div class="flash-card" id="flash-card">
+      <div class="box-dots">${renderBoxDots(w.box)}</div>
+      <div class="flash-word">${escapeHtml(w.word)}</div>
+      ${w.example ? `<div class="flash-example">${escapeHtml(w.example)}</div>` : ''}
+      <div class="flash-translation" id="flash-translation">${escapeHtml(w.translation)}</div>
+      <div class="flash-hint" id="flash-hint">klepni pro překlad</div>
+    </div>
+    <div class="review-buttons" id="review-buttons" style="display:none;">
+      <button class="btn-dontknow" id="btn-dontknow">Neznal/a jsem</button>
+      <button class="btn-know" id="btn-know">Znal/a jsem</button>
+    </div>
+  `;
+
+  document.getElementById('flash-card').addEventListener('click', showAnswer);
+}
+
+function renderBoxDots(box) {
+  let dots = '';
+  for (let i = 1; i <= 5; i++) {
+    dots += `<span class="box-dot${i <= box ? ' filled' : ''}"></span>`;
+  }
+  return dots;
+}
+
+function showAnswer() {
+  if (currentAnswerShown) return;
+  currentAnswerShown = true;
+  document.getElementById('flash-translation').style.display = 'block';
+  document.getElementById('flash-hint').style.display = 'none';
+  document.getElementById('review-buttons').style.display = 'flex';
+
+  document.getElementById('btn-know').addEventListener('click', () => submitReview(true));
+  document.getElementById('btn-dontknow').addEventListener('click', () => submitReview(false));
+}
+
+async function submitReview(correct) {
+  const w = dueWords[currentIndex];
+  try {
+    await apiPost({ action: 'review', id: w.id, correct });
+  } catch (err) {
+    console.error(err);
+  }
+  currentIndex++;
+  renderCard();
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// --- Init ---
+loadDueWords();
+
+// --- Service worker (offline shell) ---
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
